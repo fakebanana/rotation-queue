@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rotation-queue
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: rotation-queue
+  template:
+    metadata:
+      labels:
+        name: rotation-queue
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+      - name: rotation-queue
+        image: flex-repo.akam.ai/rotation-queue:latest
+        env:
+        - name: K8S_NODE
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        ports:
+        - containerPort: 8080
+          hostPort: 8123
+          name: rotation-queue
+          protocol: TCP
+      

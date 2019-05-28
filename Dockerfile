@@ -5,6 +5,6 @@ WORKDIR /usr/src/app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY rotation_queue.py .
 
-CMD [ "python", "./your-daemon-or-script.py" ]
+CMD [ "python", "./rotation_queue.py" ]
