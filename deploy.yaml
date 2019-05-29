@@ -3,6 +3,8 @@ kind: DaemonSet
 metadata:
   name: rotation-queue
   namespace: kube-system
+  labels:
+    k8s-app: rotation-queue
 spec:
   selector:
     matchLabels:
@@ -11,6 +13,7 @@ spec:
     metadata:
       labels:
         name: rotation-queue
+        k8s-app: rotation-queue
     spec:
       tolerations:
       - key: node-role.kubernetes.io/master
@@ -30,4 +33,41 @@ spec:
           hostPort: 8123
           name: rotation-queue
           protocol: TCP
-      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: rotation-queue
+  name: rotation-queue
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: rotation-queue
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: rotation-queue
+  name: rotation-queue
+  namespace: monitoring
+spec:
+  endpoints:
+    - targetPort: 8080
+      interval: 5s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      k8s-app: rotation-queue
+
